@@ -241,12 +241,8 @@ export function LandingPage() {
               </div>
               <h2 className="mb-5 text-[32px] font-[700] leading-tight text-[#111111]">Resources</h2>
               <p className="mb-auto text-[18px] font-normal leading-[1.7] text-[#404040] md:pr-8">
-                Explore support, information, and recovery tools designed for your journey.
+                Explore support, information, and recovery tools designed for your journey. (Currently curated by Sanctuary)
               </p>
-              <div className="mt-8 inline-flex items-center text-[20px] font-[600] text-[#111111]">
-                Browse resources
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </div>
             </motion.article>
           </section>
 
@@ -270,11 +266,9 @@ export function LandingPage() {
             className="mt-20 grid w-full grid-cols-1 gap-8 md:grid-cols-3"
             id="support"
           >
-            <motion.button
-              type="button"
+            <motion.article
               whileHover={{ scale: 1.01 }}
-              onClick={() => navigate('/legal')}
-              className={`${featureCardClass} cursor-pointer text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#F6F1E8]`}
+              className={`${featureCardClass} text-left`}
             >
               <div className="mb-5 flex items-center gap-4 text-[#2E4A38]">
                 <Scale className="h-7 w-7" strokeWidth={2.2} />
@@ -283,7 +277,7 @@ export function LandingPage() {
               <p className="m-0 text-[17px] leading-[1.65] text-[#404040]">
                 Designed to meet international privacy standards for sensitive documentation.
               </p>
-            </motion.button>
+            </motion.article>
 
             <motion.article whileHover={{ scale: 1.01 }} className={featureCardClass}>
               <div className="mb-5 flex items-center gap-4 text-[#2E4A38]">
@@ -291,17 +285,22 @@ export function LandingPage() {
                 <h3 className="m-0 text-[21px] font-[700] text-[#111111]">Discreet Mode</h3>
               </div>
               <p className="m-0 text-[17px] leading-[1.65] text-[#404040]">
-                Optional interface masking to protect your privacy while using the app in public.
+                Optional interface masking to protect your privacy while using the app in public. 
+                <br /><span className="text-[#666] italic">(Scoped for future development)</span>
               </p>
             </motion.article>
 
             <motion.article whileHover={{ scale: 1.01 }} className={featureCardClass}>
-              <div className="mb-5 flex items-center gap-4 text-[#2E4A38]">
+              <div className="mb-3 flex items-center gap-4 text-[#2E4A38]">
                 <Heart className="h-7 w-7" strokeWidth={2.2} />
                 <h3 className="m-0 text-[21px] font-[700] text-[#111111]">Human Support</h3>
               </div>
-              <p className="m-0 text-[17px] leading-[1.65] text-[#404040]">
-                Connect with trauma-informed professionals if you need immediate assistance.
+              <p className="m-0 text-[15px] leading-[1.5] text-[#404040]">
+                Connect with professionals if you need immediate assistance.
+                <br />
+                <strong className="mt-2 block">National Domestic Violence Hotline:</strong> 1-800-799-7233
+                <br />
+                <strong className="mt-1 block">Suicide & Crisis Lifeline:</strong> 988
               </p>
             </motion.article>
           </motion.section>

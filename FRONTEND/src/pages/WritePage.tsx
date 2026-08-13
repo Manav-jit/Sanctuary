@@ -303,29 +303,31 @@ export function WritePage() {
           variants={containerVariants}
           initial="hidden"
           animate="show"
-          className="flex h-full w-full flex-col justify-center py-8 lg:pr-12"
+          className="flex h-full w-full flex-col justify-start py-8 lg:pr-12"
         >
-          <motion.h1
-            variants={itemVariants}
-            className="font-hero m-0 max-w-[840px] text-[34px] font-[800] leading-[1.1] tracking-normal text-[#111111] md:text-[44px] lg:text-[54px]"
-          >
-            {question}
-          </motion.h1>
+          <div className="z-20 -mx-5 px-5 pb-2 pt-4 sm:-mx-8 sm:px-8 lg:-mx-0 lg:px-0 lg:pt-0">
+            <motion.h1
+              variants={itemVariants}
+              className="font-hero m-0 max-w-[840px] text-[34px] font-[800] leading-[1.1] tracking-normal text-[#111111] md:text-[44px] lg:text-[54px]"
+            >
+              {question}
+            </motion.h1>
 
-          <motion.p
-            variants={itemVariants}
-            className="mt-6 max-w-[700px] text-[18px] font-normal leading-[1.75] text-[#3F3F3F]"
-          >
-            Take as much time as you need.
-            <br />
-            You can type your experience below or use voice recording whenever you feel comfortable.
-          </motion.p>
+            <motion.p
+              variants={itemVariants}
+              className="mt-3 max-w-[700px] text-[18px] font-normal leading-[1.75] text-[#3F3F3F]"
+            >
+              Take as much time as you need.
+              <br />
+              You can type your experience below or use voice recording whenever you feel comfortable.
+            </motion.p>
+          </div>
 
           <motion.div
             variants={itemVariants}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: false, amount: 0.35 }}
-            className="mt-10 w-full max-w-[760px]"
+            className="mt-6 w-full max-w-[760px]"
           >
             <label className="sr-only" htmlFor="record-statement-response">
               Write your response
@@ -340,7 +342,7 @@ export function WritePage() {
               onKeyDown={submitOnEnter}
               placeholder="Write your response here..."
               whileFocus={{ scale: 1.005 }}
-              className="h-[180px] w-full resize-none rounded-[32px] border border-white/25 bg-[rgba(246,241,232,0.92)] p-8 text-[17px] leading-[1.8] text-[#2E2E2E] shadow-[0_12px_30px_rgba(0,0,0,0.08)] outline-none backdrop-blur-[18px] transition-all duration-300 placeholder:text-[#7A7A7A] focus:border-white/45 focus:ring-2 focus:ring-[#F6F1E8]/55"
+              className="h-[140px] md:h-[160px] w-full resize-none rounded-[32px] border border-white/25 bg-[rgba(246,241,232,0.92)] p-6 md:p-8 text-[17px] leading-[1.8] text-[#2E2E2E] shadow-[0_12px_30px_rgba(0,0,0,0.08)] outline-none backdrop-blur-[18px] transition-all duration-300 placeholder:text-[#7A7A7A] focus:border-white/45 focus:ring-2 focus:ring-[#F6F1E8]/55"
             />
           </motion.div>
 
@@ -348,7 +350,7 @@ export function WritePage() {
             variants={itemVariants}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: false, amount: 0.3 }}
-            className="mt-7 flex w-full max-w-[760px] flex-col gap-4"
+            className="mt-4 flex w-full max-w-[760px] flex-col gap-4"
           >
             <div className="flex flex-col gap-4 sm:flex-row">
               <motion.button
@@ -438,7 +440,7 @@ export function WritePage() {
             variants={itemVariants}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: false, amount: 0.3 }}
-            className="mt-9 flex w-full max-w-[760px] flex-col gap-3 sm:flex-row sm:justify-end"
+            className="mt-6 flex w-full max-w-[760px] flex-col gap-3 sm:flex-row sm:justify-end"
           >
             <motion.button
               type="button"
@@ -500,7 +502,7 @@ export function WritePage() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: false, amount: 0.4 }}
             transition={{ duration: 0.45, ease: 'easeOut' }}
-            className="mt-16 flex max-w-[760px] items-center gap-3 text-[#505050]"
+            className="mt-8 flex max-w-[760px] items-center gap-3 text-[#505050]"
           >
             <Sparkles className="h-5 w-5 shrink-0 text-[#2E4A38]" />
             <p className="m-0 text-[14px] leading-relaxed">
