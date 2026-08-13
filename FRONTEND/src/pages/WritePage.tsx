@@ -187,7 +187,12 @@ export function WritePage() {
   }, [])
 
   const submitStatement = async () => {
-    if (!sessionId || isSubmitting) return
+    if (!sessionId) {
+      setError('Session not initialized. Please ensure the backend is running and reachable.')
+      return
+    }
+    if (isSubmitting) return
+
     const trimmed = statement.trim()
     if (!trimmed) return
 
@@ -204,9 +209,16 @@ export function WritePage() {
         setError(String(data.error))
         return
       }
+      if (data.engine_available === false) {
+        setError(`Model issue: Engine not available. ${data.engine_init_error || 'Check backend configuration and API keys.'}`)
+        if (data.next_question) setQuestion(data.next_question)
+        setStatement('')
+        return
+      }
       if (data.engine_error) {
         setError(`Model issue: ${data.engine_error}`)
         if (data.next_question) setQuestion(data.next_question)
+        setStatement('')
         return
       }
       if (data.next_question) setQuestion(data.next_question)
