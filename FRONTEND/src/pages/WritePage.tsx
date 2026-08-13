@@ -6,7 +6,7 @@ import { CircleStop, Menu, Mic, Sparkles, Send } from 'lucide-react'
 import { EmergencyExit } from '../components/EmergencyExit'
 import { Waveform } from '../components/Waveform'
 import { useVoiceRecording } from '../hooks/useVoiceRecording'
-import { useMemo, useState, useEffect, useRef } from 'react'
+import { useMemo, useState, useEffect, useRef, type KeyboardEvent } from 'react'
 import { API_BASE_URL } from '../config'
 // import { GradientWave } from '../components/ui/gradient-wave'
 
@@ -162,6 +162,7 @@ export function WritePage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isGenerating, setIsGenerating] = useState(false)
   const [testimony, setTestimony] = useState<any>(null)
+  const [error, setError] = useState('')
   const startedRef = useRef(false)
 
   useEffect(() => {
@@ -179,6 +180,7 @@ export function WritePage() {
         if (qData.question) setQuestion(qData.question)
       } catch (err) {
         console.error('Error starting session:', err)
+        setError('Could not start the session. Please check that the Render backend is running.')
       }
     }
     startSession()
@@ -190,6 +192,7 @@ export function WritePage() {
     if (!trimmed) return
 
     setIsSubmitting(true)
+    setError('')
     try {
       const res = await fetch(`${API_BASE_URL}/submit-answer/${sessionId}`, {
         method: 'POST',
@@ -197,13 +200,29 @@ export function WritePage() {
         body: JSON.stringify({ message: trimmed }),
       })
       const data = await res.json()
+      if (data.error) {
+        setError(String(data.error))
+        return
+      }
+      if (data.engine_error) {
+        setError(`Model issue: ${data.engine_error}`)
+        if (data.next_question) setQuestion(data.next_question)
+        return
+      }
       if (data.next_question) setQuestion(data.next_question)
       setStatement('')
     } catch (err) {
       console.error('Submit error:', err)
+      setError('Could not submit your response. Please check the backend URL and CORS settings.')
     } finally {
       setIsSubmitting(false)
     }
+  }
+
+  const submitOnEnter = (event: KeyboardEvent<HTMLTextAreaElement>) => {
+    if (event.key !== 'Enter' || event.shiftKey || event.nativeEvent.isComposing) return
+    event.preventDefault()
+    submitStatement()
   }
 
   const {
@@ -306,6 +325,7 @@ export function WritePage() {
                 setStatement(event.target.value)
                 if (hasSkipped) setHasSkipped(false)
               }}
+              onKeyDown={submitOnEnter}
               placeholder="Write your response here..."
               whileFocus={{ scale: 1.005 }}
               className="h-[180px] w-full resize-none rounded-[32px] border border-white/25 bg-[rgba(246,241,232,0.92)] p-8 text-[17px] leading-[1.8] text-[#2E2E2E] shadow-[0_12px_30px_rgba(0,0,0,0.08)] outline-none backdrop-blur-[18px] transition-all duration-300 placeholder:text-[#7A7A7A] focus:border-white/45 focus:ring-2 focus:ring-[#F6F1E8]/55"
@@ -428,6 +448,12 @@ export function WritePage() {
               {isGenerating ? 'Generating...' : 'End Session'}
             </motion.button>
           </motion.div>
+
+          {error ? (
+            <p className="mt-5 max-w-[760px] rounded-[18px] border border-[#E4B9B9] bg-[#F7E7E7] px-4 py-3 text-[14px] leading-relaxed text-[#6A2E2E]" role="alert">
+              {error}
+            </p>
+          ) : null}
 
           <AnimatePresence>
             {hasSkipped ? (

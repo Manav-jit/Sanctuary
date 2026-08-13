@@ -81,9 +81,9 @@ if ConversationEngine and EngineConfig:
         engine = ConversationEngine(
             EngineConfig(
                 mode=os.environ.get("TRAUMA_ENGINE_MODE", "offline"),
-                llm_provider=os.environ.get("LLM_PROVIDER", "ollama"),
+                llm_provider=os.environ.get("LLM_PROVIDER", "groq"),
                 llm_api_key=os.environ.get("LLM_API_KEY"),
-                llm_model=os.environ.get("LLM_MODEL", "llama3.1"),
+                llm_model=os.environ.get("LLM_MODEL", "llama-3.3-70b-versatile"),
                 ollama_url=os.environ.get("OLLAMA_URL", "http://localhost:11434/api/generate"),
             )
         )
@@ -135,11 +135,12 @@ def process_text_with_engine(
     session_id: str,
     session: dict[str, Any],
     message: str,
-) -> tuple[str, dict[str, Any], str, str | None, str | None]:
+) -> tuple[str, dict[str, Any], str, str | None, str | None, str | None]:
     next_question = "Thank you for sharing. Please continue when you are ready."
     updated_json: dict[str, Any] = session.get("memory", {})
     mode_used = "fallback"
     phase = None
+    engine_error = None
 
     engine_session_id, greeting_if_created = ensure_engine_session(session)
     if greeting_if_created and not session.get("current_question"):
@@ -152,17 +153,19 @@ def process_text_with_engine(
         try:
             engine_response = engine.process_message(engine_session_id, message)
             next_question = normalize_question(engine_response.response_text)
-            updated_json = engine.get_testimony(engine_session_id)
+            updated_json = session.get("memory", {})
             mode_used = engine_response.mode_used or "offline"
+            engine_error = getattr(engine_response, "error", None)
             phase_value = engine_response.phase
             phase = getattr(phase_value, "value", str(phase_value))
         except Exception as exc:  # pragma: no cover
             print("Engine process_message error:", exc)
+            engine_error = str(exc)
             next_question = (
                 "I heard you. Could you share a little more detail about what happened next?"
             )
 
-    return next_question, updated_json, mode_used, phase, engine_session_id
+    return next_question, updated_json, mode_used, phase, engine_session_id, engine_error
 
 
 def process_audio_with_engine(
@@ -205,7 +208,10 @@ def process_audio_with_engine(
                     mode_used,
                     phase,
                     _,
+                    model_error,
                 ) = process_text_with_engine(session_id, session, transcript_text)
+                if model_error:
+                    processing_note = model_error
             else:
                 transcription_ok = False
                 if not processing_note:
@@ -297,6 +303,18 @@ def get_next_question(session_id: str):
     return {"question": normalize_question(session.get("current_question"))}
 
 
+@app.get("/health")
+def health():
+    return {
+        "ok": True,
+        "engine_available": bool(engine),
+        "engine_init_error": _engine_init_error,
+        "llm_provider": os.environ.get("LLM_PROVIDER", "groq"),
+        "llm_model": os.environ.get("LLM_MODEL", "llama-3.3-70b-versatile"),
+        "has_llm_api_key": bool(os.environ.get("LLM_API_KEY")),
+    }
+
+
 @app.post("/submit-answer/{session_id}")
 async def submit_answer(session_id: str, request: Request):
     session = sessions_collection.find_one({"session_id": session_id})
@@ -312,6 +330,7 @@ async def submit_answer(session_id: str, request: Request):
     mode_used = "fallback"
     phase = None
     engine_session_id: str | None = None
+    engine_error: str | None = None
     audio_debug: dict[str, Any] = {
         "frontend_audio_sent": False,
         "backend_received_file": False,
@@ -337,6 +356,7 @@ async def submit_answer(session_id: str, request: Request):
             mode_used,
             phase,
             engine_session_id,
+            engine_error,
         ) = process_text_with_engine(session_id, session, message)
         transcript_text = message
     elif content_type.startswith("multipart/form-data"):
@@ -352,6 +372,7 @@ async def submit_answer(session_id: str, request: Request):
                 mode_used,
                 phase,
                 engine_session_id,
+                engine_error,
             ) = process_text_with_engine(session_id, session, message)
             transcript_text = message
         elif audio:
@@ -389,6 +410,7 @@ async def submit_answer(session_id: str, request: Request):
                     transcription_ok,
                     processing_note,
                 ) = process_audio_with_engine(session_id, session, temp_path)
+                engine_error = processing_note or None
                 audio_debug["transcription_ok"] = transcription_ok
                 audio_debug["note"] = processing_note
             finally:
@@ -452,6 +474,7 @@ async def submit_answer(session_id: str, request: Request):
         "audio_debug": audio_debug,
         "engine_available": bool(engine),
         "engine_init_error": _engine_init_error,
+        "engine_error": engine_error,
     }
 
 

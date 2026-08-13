@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type KeyboardEvent } from 'react'
 import { API_BASE_URL } from '../config'
 
 const BASE_URL = API_BASE_URL
@@ -109,6 +109,11 @@ function SharePage() {
         setError(data.error)
         return
       }
+      if (data.engine_error) {
+        setError(`Model issue: ${data.engine_error}`)
+        if (data.next_question) setQuestion(data.next_question)
+        return
+      }
 
       if (data.next_question) setQuestion(data.next_question)
       if (data.transcript_text) setLastTranscript(String(data.transcript_text))
@@ -121,6 +126,12 @@ function SharePage() {
     } finally {
       setIsSubmitting(false)
     }
+  }
+
+  const submitOnEnter = (event: KeyboardEvent<HTMLTextAreaElement>) => {
+    if (event.key !== 'Enter' || event.shiftKey || event.nativeEvent.isComposing) return
+    event.preventDefault()
+    submitMessage()
   }
 
   const fetchTestimony = async () => {
@@ -244,6 +255,7 @@ function SharePage() {
         <textarea
           value={message}
           onChange={(e) => setMessage(e.target.value)}
+          onKeyDown={submitOnEnter}
           placeholder="Type your response here or use voice-to-text..."
           rows={6}
           style={{

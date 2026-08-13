@@ -10,10 +10,10 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class EngineConfig:
-    mode: str = "ollama"
-    llm_provider: str = "ollama"
+    mode: str = "groq"
+    llm_provider: str = "groq"
     llm_api_key: str = None
-    llm_model: str = "llama3.1"
+    llm_model: str = "llama-3.3-70b-versatile"
     ollama_url: str = "http://localhost:11434/api/generate"
 
 @dataclass
@@ -21,12 +21,17 @@ class EngineResponse:
     response_text: str
     mode_used: str
     phase: str
+    error: str | None = None
 
 class ConversationEngine:
     def __init__(self, config: EngineConfig = None):
         self.config = config or EngineConfig()
         self.sessions: Dict[str, Dict[str, Any]] = {}
-        logger.info(f"Initialized new Ollama Engine with model {self.config.llm_model}")
+        logger.info(
+            "Initialized ConversationEngine with provider=%s model=%s",
+            self.config.llm_provider,
+            self.config.llm_model,
+        )
 
     def start_session(self) -> Tuple[str, str]:
         session_id = str(uuid.uuid4())
@@ -67,7 +72,13 @@ class ConversationEngine:
             prompt_text += f"{msg['role'].capitalize()}: {msg['content']}\n"
         prompt_text += "Assistant: "
         
-        response_text = self._call_llm(prompt_text, timeout=120)
+        model_error = None
+        try:
+            response_text = self._call_llm(prompt_text, timeout=120)
+        except Exception as exc:
+            logger.exception("Model call failed")
+            model_error = str(exc)
+            response_text = ""
         
         if response_text:
             # Strip out any bracketed or parenthesized meta-commentary
@@ -80,8 +91,9 @@ class ConversationEngine:
         
         return EngineResponse(
             response_text=response_text,
-            mode_used="ollama",
-            phase="fact_gathering"
+            mode_used=self.config.llm_provider,
+            phase="fact_gathering",
+            error=model_error,
         )
 
     def get_testimony(self, session_id: str) -> dict:
@@ -103,21 +115,27 @@ class ConversationEngine:
         for msg in session["history"]:
             prompt_text += f"{msg['role'].capitalize()}: {msg['content']}\n"
             
-        report_text = self._call_llm(prompt_text, timeout=120)
+        try:
+            report_text = self._call_llm(prompt_text, timeout=120)
+        except Exception as exc:
+            logger.exception("Testimony generation failed")
+            report_text = f"Could not generate the report right now: {exc}"
         
         session["testimony"] = {"report": report_text}
         return session["testimony"]
 
     def _call_llm(self, prompt: str, format: str = None, timeout: int = 120) -> str:
-        if self.config.llm_provider == "groq":
+        provider = (self.config.llm_provider or "").lower()
+        if provider == "groq":
             return self._call_groq(prompt, format, timeout)
-        else:
+        if provider == "ollama":
             return self._call_ollama(prompt, format, timeout)
+        raise ValueError(f"Unsupported LLM_PROVIDER: {self.config.llm_provider}")
 
     def _call_groq(self, prompt: str, format: str = None, timeout: int = 120) -> str:
         if not self.config.llm_api_key:
             logger.error("Groq API key not provided")
-            return "ERROR: Groq API key is missing. Please restart the backend with the LLM_API_KEY environment variable set."
+            raise ValueError("Groq API key is missing. Set LLM_API_KEY in Render and redeploy.")
             
         try:
             url = "https://api.groq.com/openai/v1/chat/completions"
@@ -126,7 +144,7 @@ class ConversationEngine:
                 "Content-Type": "application/json"
             }
             payload = {
-                "model": "llama-3.3-70b-versatile",
+                "model": self.config.llm_model,
                 "messages": [{"role": "user", "content": prompt}],
                 "temperature": 0.5,
             }
@@ -138,10 +156,10 @@ class ConversationEngine:
                 return response.json()["choices"][0]["message"]["content"].strip()
             else:
                 logger.error(f"Groq error: {response.status_code} {response.text}")
-                return f"ERROR: Groq API failed with status {response.status_code}"
+                raise RuntimeError(f"Groq API failed with status {response.status_code}: {response.text}")
         except requests.exceptions.RequestException as e:
             logger.error(f"Could not connect to Groq: {e}")
-            return "ERROR: Could not connect to Groq server."
+            raise RuntimeError(f"Could not connect to Groq server: {e}")
 
     def _call_ollama(self, prompt: str, format: str = None, timeout: int = 60) -> str:
         try:
