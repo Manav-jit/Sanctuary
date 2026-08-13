@@ -158,7 +158,7 @@ export function WritePage() {
   const [statement, setStatement] = useState('')
   const [hasSkipped, setHasSkipped] = useState(false)
   const [sessionId, setSessionId] = useState<string | null>(null)
-  const [question, setQuestion] = useState('Could you please describe the event in your own words?')
+  const [question, setQuestion] = useState("I'm here to listen and help you record what happened. Before we begin, what name would you like me to use for you?")
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isGenerating, setIsGenerating] = useState(false)
   const [testimony, setTestimony] = useState<any>(null)

@@ -262,7 +262,7 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str):
 def start_session():
     session_id = str(uuid.uuid4())
 
-    current_question = "Please share what happened, in your own words."
+    current_question = "I'm here to listen and help you record what happened. Before we begin, what name would you like me to use for you?"
     engine_session_id = None
 
     if engine:
