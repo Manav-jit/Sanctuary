@@ -1,5 +1,7 @@
 # Sanctuary
 
+🚀 **Live Demo:** [Deployed on Vercel](https://sanctuary-ashy.vercel.app) 
+
 Sanctuary is a trauma-informed legal documentation assistant. It provides a safe, conversational interface designed to gently and empathetically help survivors record factual accounts of incidents (the Who, What, Where, When, and How) to build structured, professional testimonies.
 
 The platform relies on a sophisticated LLM engine powered by the lightning-fast Groq API, ensuring privacy, empathy, and highly accurate fact-gathering without interrogating or overwhelming the user. It also supports real-time Voice-to-Text for seamless conversational input.
@@ -78,7 +80,9 @@ docker-compose up -d --build
 - **`backend/main.py`**: The FastAPI server that handles REST endpoints and database mocking.
 - **`FRONTEND/src/pages/WritePage.tsx`**: The main interactive React page for gathering the testimony, complete with Voice-to-Text hooks.
 
-## Deployment (Vercel + Render)
+## 🚀 Live Deployment (Vercel + Render)
+
+This project is actively deployed using Vercel for the frontend and Render for the backend.
 
 ### Backend (Render)
 1. Create a new **Web Service**.
