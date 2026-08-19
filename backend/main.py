@@ -74,7 +74,7 @@ if ConversationEngine and EngineConfig:
                 mode=os.environ.get("TRAUMA_ENGINE_MODE", "offline"),
                 llm_provider=os.environ.get("LLM_PROVIDER", "groq"),
                 llm_api_key=os.environ.get("LLM_API_KEY"),
-                llm_model=os.environ.get("LLM_MODEL", "llama-3.3-70b-versatile"),
+                llm_model=os.environ.get("LLM_MODEL", "gpt-oss-120b"),
                 ollama_url=os.environ.get("OLLAMA_URL", "http://localhost:11434/api/generate"),
             )
         )
@@ -301,7 +301,7 @@ def health():
         "engine_available": bool(engine),
         "engine_init_error": _engine_init_error,
         "llm_provider": os.environ.get("LLM_PROVIDER", "groq"),
-        "llm_model": os.environ.get("LLM_MODEL", "llama-3.3-70b-versatile"),
+        "llm_model": os.environ.get("LLM_MODEL", "gpt-oss-120b"),
         "has_llm_api_key": bool(os.environ.get("LLM_API_KEY")),
     }
 

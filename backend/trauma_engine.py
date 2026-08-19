@@ -13,7 +13,7 @@ class EngineConfig:
     mode: str = "groq"
     llm_provider: str = "groq"
     llm_api_key: str = None
-    llm_model: str = "openai/gpt-oss-120b"
+    llm_model: str = "gpt-oss-120b"
     ollama_url: str = "http://localhost:11434/api/generate"
 
 @dataclass
